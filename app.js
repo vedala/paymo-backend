@@ -5,14 +5,14 @@ import cors from "cors";
 import authorize from "./authorization.js";
 import  { Router } from "express";
 import routes from "./routes.js";
-import { getWelcome } from "./handlers.js";
+import { getWelcome, getBanks } from "./handlers.js";
 
 const app = express();
 app.use(cors());
 
 const router = Router();
 
-routes(router, { getWelcome });
+routes(router, { getWelcome, getBanks });
 
 app.use("/", router);
 

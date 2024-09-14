@@ -8,7 +8,7 @@ const knex = Knex(knexOptionsEnv);
 
 knex.schema.createTable('banks', (table) => {
   table.increments('id')
-  table.string('bank_name')
+  table.string('name')
 }).then( () => console.log("table created"))
 .catch( (err) => { console.log(err); throw err })
 .finally( () => {

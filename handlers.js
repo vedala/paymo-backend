@@ -1,6 +1,20 @@
 import getKnexObj from "./getKnexObj.js";
+import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 
 const knex = getKnexObj();
+
+const plaidConfig = new Configuration({
+  basePath: PlaidEnvironments[process.env.PLAID_ENV],
+  baseOptions: {
+    headers: {
+      "PLAID-CLIENT-ID": process.env.PLAID_CLIENT_ID,
+      "PLAID-SECRET": process.env.PLAID_SECRET,
+      "Plaid-Version": "2020-09-14",
+    },
+  },
+});
+
+const plaidClient = new PlaidApi(plaidConfig);
 
 const getWelcome = async (req, res) => {
   res.send("Welcome to Paymo!");
@@ -15,7 +29,25 @@ const getBanks = async (req, res) => {
 }
 
 const createLinkToken = async (req, res) => {
-  return "{}";
-};
+  const tokenResponse = await plaidClient.linkTokenCreate({
+    // user: { client_user_id: req.sessionID },
+    user: { client_user_id: "some_user" },
+    client_name: "Paymo",
+    language: "en",
+    products: ["auth"],
+    country_codes: ["US"],
+    // redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
+  });
+  res.json(tokenResponse.data);
+}
 
-export { getWelcome, getBanks, createLinkToken };
+const exchangePublicToken = async (req, res) => {
+  const exchangeResponse = await plaidClient.exchangePublicToken({
+    public_token: req.body.public_token,
+  });
+
+  req.session.access_token = exchangeResponse.data.access_token;
+  res.json(true);
+}
+
+export { getWelcome, getBanks, createLinkToken, exchangePublicToken };

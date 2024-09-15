@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import  { Router } from "express";
 import routes from "./routes.js";
-import { getWelcome, getBanks } from "./handlers.js";
+import { getWelcome, getBanks, createLinkToken } from "./handlers.js";
 
 const app = express();
 
@@ -15,7 +15,7 @@ app.options('*', cors());
 const router = Router();
 const port = 3000;
 app.use("/", router);
-routes(router, { getWelcome, getBanks });
+routes(router, { getWelcome, getBanks, createLinkToken });
 
 
 app.listen(port, () => {

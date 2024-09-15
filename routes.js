@@ -4,7 +4,7 @@ const routes = (router, { getWelcome, getBanks, createLinkToken, exchangePublicT
   router.get("/", getWelcome);
   router.get("/banks", authorize, getBanks);
   router.get("/api/create_link_token", createLinkToken);
-  router.post("/api/exhange_public_token", exchangePublicToken);
+  router.post("/api/exchange_public_token", exchangePublicToken);
 }
 
 export default routes;

@@ -42,11 +42,21 @@ const createLinkToken = async (req, res) => {
 }
 
 const exchangePublicToken = async (req, res) => {
-  const exchangeResponse = await plaidClient.exchangePublicToken({
+  const exchangeResponse = await plaidClient.itemPublicTokenExchange({
     public_token: req.body.public_token,
   });
 
-  req.session.access_token = exchangeResponse.data.access_token;
+console.log("exchangePublicToken: exchangeResponse.data", exchangeResponse.data);
+console.log("exchangePublicToken: exchangeResponse.data.access_token=", exchangeResponse.data.access_token);
+  const itemInfo = {
+    name: 'Not known yet',
+    item_id: exchangeResponse.data.item_id,
+    access_token: exchangeResponse.data.access_token,
+  };
+
+  await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')
+    .catch((err) => { console.error(err); throw err; });
+
   res.json(true);
 }
 

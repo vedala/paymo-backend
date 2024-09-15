@@ -14,4 +14,8 @@ const getBanks = async (req, res) => {
   res.send(rows);
 }
 
-export { getWelcome, getBanks };
+const createLinkToken = async (req, res) => {
+  return "{}";
+};
+
+export { getWelcome, getBanks, createLinkToken };

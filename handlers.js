@@ -1,6 +1,10 @@
 import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 
+const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(
+  ',',
+);
+
 const knex = getKnexObj();
 
 const plaidConfig = new Configuration({
@@ -48,8 +52,26 @@ const exchangePublicToken = async (req, res) => {
 
 console.log("exchangePublicToken: exchangeResponse.data", exchangeResponse.data);
 console.log("exchangePublicToken: exchangeResponse.data.access_token=", exchangeResponse.data.access_token);
+
+  const accessToken = exchangeResponse.data.access_token;
+
+  const itemResponse = await plaidClient.itemGet({
+    access_token: accessToken,
+  });
+
+console.log("itemResponse=data", itemResponse.data);
+
+  const institutionId = itemResponse.data.item.institution_id;
+  const instResponse = await plaidClient.institutionsGetById({
+    institution_id: institutionId,
+    country_codes: PLAID_COUNTRY_CODES,
+  })
+
+console.log("instResponse.data=", instResponse.data);
+  const institutionName = instResponse.data.institution.name;
+
   const itemInfo = {
-    name: 'Not known yet',
+    name: institutionName,
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,
   };

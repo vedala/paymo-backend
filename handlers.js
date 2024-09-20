@@ -32,6 +32,14 @@ const getBanks = async (req, res) => {
   res.send(rows);
 }
 
+const getRecipients = async (req, res) => {
+  const rows = await knex(process.env.RECIPIENTS_TABLE_NAME).select('id', 'name')
+    .orderBy('id')
+    .catch((err) => { console.error(err); throw err; });
+
+  res.send(rows);
+}
+
 const createLinkToken = async (req, res) => {
   const tokenResponse = await plaidClient.linkTokenCreate({
     // user: { client_user_id: req.sessionID },
@@ -82,4 +90,4 @@ console.log("instResponse.data=", instResponse.data);
   res.json(true);
 }
 
-export { getWelcome, getBanks, createLinkToken, exchangePublicToken };
+export { getWelcome, getBanks, getRecipients, createLinkToken, exchangePublicToken };

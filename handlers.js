@@ -1,3 +1,4 @@
+import axios from "axios";
 import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 
@@ -41,7 +42,22 @@ const getRecipients = async (req, res) => {
 }
 
 const getUserByEmail = async (req, res) => {
-  res.send([{}]);
+  const managementAccessTokenRows = await knex('management_access_token').select('access_token')
+    .catch((err) => { console.error(err); throw err; });
+
+  const managementApiAccessToken = managementAccessTokenRows[0].access_token;
+
+  const options = {
+    method: 'GET',
+    url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+    headers: {
+      'authorization': `Bearer ${managementApiAccessToken}`
+    }
+  };
+
+  const axiosResponse = await axios(options);
+  const userData = axiosResponse.data;
+  res.send(userData);
 }
 
 const createLinkToken = async (req, res) => {

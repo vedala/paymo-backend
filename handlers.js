@@ -40,6 +40,10 @@ const getRecipients = async (req, res) => {
   res.send(rows);
 }
 
+const getUserByEmail = async (req, res) => {
+  res.send([{}]);
+}
+
 const createLinkToken = async (req, res) => {
   const tokenResponse = await plaidClient.linkTokenCreate({
     // user: { client_user_id: req.sessionID },
@@ -90,4 +94,11 @@ console.log("instResponse.data=", instResponse.data);
   res.json(true);
 }
 
-export { getWelcome, getBanks, getRecipients, createLinkToken, exchangePublicToken };
+export {
+  getWelcome,
+  getBanks,
+  getRecipients,
+  getUserByEmail,
+  createLinkToken,
+  exchangePublicToken
+};

@@ -46,13 +46,18 @@ const getUserByEmail = async (req, res) => {
     .catch((err) => { console.error(err); throw err; });
 
   const managementApiAccessToken = managementAccessTokenRows[0].access_token;
+  const searchEmail = req.query["searchEmail"];
+  const queryParams = {
+    q: `email:${searchEmail}`
+  };
 
   const options = {
     method: 'GET',
     url: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
     headers: {
       'authorization': `Bearer ${managementApiAccessToken}`
-    }
+    },
+    params: queryParams
   };
 
   const axiosResponse = await axios(options);

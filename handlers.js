@@ -60,15 +60,22 @@ const getUserByEmail = async (req, res) => {
     params: queryParams
   };
 
+console.log("options (api/v2/users)=", options);
   const axiosResponse = await axios(options);
   const userData = [];
-  if (axiosResponse.length > 0) {
+  if (axiosResponse.data.length > 0) {
     userData.push({
-      name: axiosResponse.data.name,
-      user_id: axiosResponse.data.user_id,
+      name: axiosResponse.data[0].name,
+      email: axiosResponse.data[0].email,
     });
   }
 console.log("userData=", userData);
+
+  if (userData.length > 0) {
+    await knex('recipients').insert(userData[0]).returning('id')
+    .catch((err) => { console.error(err); throw err })
+  }
+
   res.send(userData);
 }
 

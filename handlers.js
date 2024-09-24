@@ -61,7 +61,14 @@ const getUserByEmail = async (req, res) => {
   };
 
   const axiosResponse = await axios(options);
-  const userData = axiosResponse.data;
+  const userData = [];
+  if (axiosResponse.length > 0) {
+    userData.push({
+      name: axiosResponse.data.name,
+      user_id: axiosResponse.data.user_id,
+    });
+  }
+console.log("userData=", userData);
   res.send(userData);
 }
 

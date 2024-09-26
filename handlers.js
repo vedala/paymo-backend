@@ -47,6 +47,7 @@ const getUserByEmail = async (req, res) => {
 
   const managementApiAccessToken = managementAccessTokenRows[0].access_token;
   const searchEmail = req.query["searchEmail"];
+  const senderUserId = req.query["senderUserId"];
   const queryParams = {
     q: `email:${searchEmail}`
   };
@@ -60,11 +61,13 @@ const getUserByEmail = async (req, res) => {
     params: queryParams
   };
 
-console.log("options (api/v2/users)=", options);
   const axiosResponse = await axios(options);
+console.log("getUserByEmail: axiosResponse.data=", axiosResponse.data);
   const userData = [];
   if (axiosResponse.data.length > 0) {
     userData.push({
+      sender_user_id: senderUserId,
+      recipient_user_id: axiosResponse.data[0].user_id,
       name: axiosResponse.data[0].name,
       email: axiosResponse.data[0].email,
     });

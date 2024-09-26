@@ -8,6 +8,7 @@ const knex = Knex(knexOptionsEnv);
 
 knex.schema.createTable('banks', (table) => {
   table.increments('id')
+  table.string('user_id')
   table.string('name')
   table.string('item_id')
   table.string('access_token')

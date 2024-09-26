@@ -8,6 +8,7 @@ const knex = Knex(knexOptionsEnv);
 
 knex.schema.createTable('recipients', (table) => {
   table.increments('id')
+  table.string('user_id')
   table.string('name')
   table.string('phone')
   table.string('email')

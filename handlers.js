@@ -118,6 +118,7 @@ console.log("instResponse.data=", instResponse.data);
   const institutionName = instResponse.data.institution.name;
 
   const itemInfo = {
+    user_id: req.body.user_id,
     name: institutionName,
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,

@@ -36,6 +36,7 @@ const getBanks = async (req, res) => {
 
 const getRecipients = async (req, res) => {
   const rows = await knex(process.env.RECIPIENTS_TABLE_NAME).select('id', 'name')
+    .where({sender_user_id: req.query.sender_user_id})
     .orderBy('id')
     .catch((err) => { console.error(err); throw err; });
 

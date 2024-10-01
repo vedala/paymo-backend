@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import  { Router } from "express";
 import routes from "./routes.js";
-import { getWelcome, getBanks, getRecipients, getUserByEmail, createLinkToken, exchangePublicToken } from "./handlers.js";
+import { getWelcome, getBanks, getRecipients, getUserByEmail, createLinkToken, exchangePublicToken, sendMoney } from "./handlers.js";
 import fetchManagementApiAccessToken from "./fetchManagementApiAccessToken.js";
 import saveManagementToken from "./saveManagementToken.js";
 
@@ -17,7 +17,7 @@ app.options('*', cors());
 const router = Router();
 const port = 3000;
 app.use("/", router);
-routes(router, { getWelcome, getBanks, getRecipients, getUserByEmail, createLinkToken, exchangePublicToken });
+routes(router, { getWelcome, getBanks, getRecipients, getUserByEmail, createLinkToken, exchangePublicToken, sendMoney });
 
 const managementApiAccessToken = await fetchManagementApiAccessToken();
 await saveManagementToken(managementApiAccessToken);

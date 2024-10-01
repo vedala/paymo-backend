@@ -16,7 +16,8 @@
     "express": "^4.19.2",
     "express-oauth2-jwt-bearer": "^1.5.0",
     "knex": "^2.5.1",
-    "plaid": "^27.0.0"
+    "plaid": "^27.0.0",
+    "stripe": "^16.12.0"
   },
   "type": "module",
   "devDependencies": {

@@ -1,7 +1,7 @@
 import axios from "axios";
 import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
-
+import stripe from "stripe";
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(
   ',',
 );
@@ -94,6 +94,7 @@ const createLinkToken = async (req, res) => {
     country_codes: ["US"],
     // redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
   });
+console.log("tokenResponse=", tokenResponse);
   res.json(tokenResponse.data);
 }
 
@@ -107,11 +108,43 @@ console.log("exchangePublicToken: exchangeResponse.data.access_token=", exchange
 
   const accessToken = exchangeResponse.data.access_token;
 
+//
+//============================================
+
+const plaidResponse = await plaidClient.accountsGet({ access_token: accessToken });
+console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
+  const accountId = plaidResponse.data.accounts[0].account_id;
+
+  const stripeRequest = {
+    access_token: accessToken,
+    account_id: accountId
+  };
+
+  const stripeTokenResponse = await plaidClient.processorStripeBankAccountTokenCreate(
+    stripeRequest
+  );
+
+
+console.log("==================");
+console.log("stripeTokenResponse=", stripeTokenResponse);
+console.log("stripeTokenResponse.data.stripe_bank_account_token=", stripeTokenResponse.data.stripe_bank_account_token);
+console.log("==================");
+//===============================================
+//
+
+  // const stripeClient = stripe(process.env.STRIPE_TEST_SECRET_KEY);
+  // const stripeCustomer = await stripeClient.customers.create({
+  //   name: 'Any Name',
+  //   source: stripeTokenResponse.data.stripe_bank_account_token,
+  // });
+
   const itemResponse = await plaidClient.itemGet({
     access_token: accessToken,
   });
 
-console.log("itemResponse=data", itemResponse.data);
+  // console.log("stripeCustomer=", stripeCustomer);
+
+// console.log("itemResponse=data", itemResponse.data);
 
   const institutionId = itemResponse.data.item.institution_id;
   const instResponse = await plaidClient.institutionsGetById({
@@ -119,7 +152,7 @@ console.log("itemResponse=data", itemResponse.data);
     country_codes: PLAID_COUNTRY_CODES,
   })
 
-console.log("instResponse.data=", instResponse.data);
+// console.log("instResponse.data=", instResponse.data);
   const institutionName = instResponse.data.institution.name;
 
   const itemInfo = {

@@ -169,11 +169,16 @@ console.log("==================");
   res.json(true);
 }
 
+const sendMoney = async (req, res) => {
+console.log("sendMoney: req.body=", req.body);
+}
+
 export {
   getWelcome,
   getBanks,
   getRecipients,
   getUserByEmail,
   createLinkToken,
-  exchangePublicToken
+  exchangePublicToken,
+  sendMoney,
 };

@@ -171,6 +171,12 @@ console.log("==================");
 
 const sendMoney = async (req, res) => {
 console.log("sendMoney: req.body=", req.body);
+  // We are sending money from our account to selected recipient's account
+  // Need to figure out:
+  //    - How to deduct money from our account
+  //    - How to send money to a recipient
+  //      (The charges API seems to be designed for getting money from recipient's account
+  //       to ours).
 }
 
 export {

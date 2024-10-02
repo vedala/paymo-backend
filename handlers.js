@@ -108,27 +108,26 @@ console.log("exchangePublicToken: exchangeResponse.data.access_token=", exchange
 
   const accessToken = exchangeResponse.data.access_token;
 
-//
-//============================================
 
 const plaidResponse = await plaidClient.accountsGet({ access_token: accessToken });
 console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
   const accountId = plaidResponse.data.accounts[0].account_id;
 
-  const stripeRequest = {
-    access_token: accessToken,
-    account_id: accountId
-  };
+//
+//============================================
 
-  const stripeTokenResponse = await plaidClient.processorStripeBankAccountTokenCreate(
-    stripeRequest
-  );
+  // const stripeRequest = {
+  //   access_token: accessToken,
+  //   account_id: accountId
+  // };
 
+  // const stripeTokenResponse = await plaidClient.processorStripeBankAccountTokenCreate(
+  //   stripeRequest
+  // );
 
-console.log("==================");
-console.log("stripeTokenResponse=", stripeTokenResponse);
-console.log("stripeTokenResponse.data.stripe_bank_account_token=", stripeTokenResponse.data.stripe_bank_account_token);
-console.log("==================");
+// console.log("stripeTokenResponse=", stripeTokenResponse);
+// console.log("stripeTokenResponse.data.stripe_bank_account_token=", stripeTokenResponse.data.stripe_bank_account_token);
+
 //===============================================
 //
 
@@ -138,11 +137,29 @@ console.log("==================");
   //   source: stripeTokenResponse.data.stripe_bank_account_token,
   // });
 
+  // console.log("stripeCustomer=", stripeCustomer);
+
+
+
+  // taba pay
+//============================================
+  const processorRequest = {
+    access_token: accessToken,
+    account_id: accountId,
+    processor: 'taba_pay',
+  };
+
+  const processorTokenResponse = await plaidClient.processorTokenCreate(
+      processorRequest,
+  );
+
+  console.log("processorTokenResponse=", processorTokenResponse);
+//============================================
+
+
   const itemResponse = await plaidClient.itemGet({
     access_token: accessToken,
   });
-
-  // console.log("stripeCustomer=", stripeCustomer);
 
 // console.log("itemResponse=data", itemResponse.data);
 
@@ -160,7 +177,8 @@ console.log("==================");
     name: institutionName,
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,
-    stripe_bank_account_token: stripeTokenResponse.data.stripe_bank_account_token,
+    // stripe_bank_account_token: stripeTokenResponse.data.stripe_bank_account_token,
+    tabapay_bank_account_token: processorTokenResponse.data.processor_token,
   };
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')

@@ -13,6 +13,7 @@ knex.schema.createTable('banks', (table) => {
   table.string('item_id')
   table.string('access_token')
   table.string('stripe_bank_account_token')
+  table.string('tabapay_bank_account_token')
 }).then( () => console.log("table created"))
 .catch( (err) => { console.log(err); throw err })
 .finally( () => {

@@ -146,7 +146,7 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
   const processorRequest = {
     access_token: accessToken,
     account_id: accountId,
-    processor: 'taba_pay',
+    processor: 'sila_money',
   };
 
   const processorTokenResponse = await plaidClient.processorTokenCreate(
@@ -178,7 +178,8 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,
     // stripe_bank_account_token: stripeTokenResponse.data.stripe_bank_account_token,
-    tabapay_bank_account_token: processorTokenResponse.data.processor_token,
+    // tabapay_bank_account_token: processorTokenResponse.data.processor_token,
+    silamoney_token: processorTokenResponse.data.processor_token,
   };
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')

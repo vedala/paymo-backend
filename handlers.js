@@ -154,6 +154,9 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
   );
 
   console.log("processorTokenResponse=", processorTokenResponse);
+
+  const silaMoneyToken = processorTokenResponse.data.processor_token;
+
 //============================================
 
 
@@ -179,12 +182,30 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     access_token: exchangeResponse.data.access_token,
     // stripe_bank_account_token: stripeTokenResponse.data.stripe_bank_account_token,
     // tabapay_bank_account_token: processorTokenResponse.data.processor_token,
-    silamoney_token: processorTokenResponse.data.processor_token,
+    silamoney_token: silaMoneyToken,
     silamoney_request_id: processorTokenResponse.data.request_id,
   };
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')
     .catch((err) => { console.error(err); throw err; });
+
+  //
+  // Call Sila money link_account
+  //
+
+  const options = {
+    method: 'GET',
+    url: `https://${process.env.SILA_MONEY_API_URL}/link_account`,
+    headers: {
+      app_handle: `${process.env.SILA_MONEY_APP_HANDLE}`,
+    },
+    provider_token: silaMoneyToken,
+    provider: "plaid",
+    account_type: "Checking",
+    provider_token_type: "processor",
+  };
+
+  const axiosResponse = await axios(options);
 
   res.json(true);
 }

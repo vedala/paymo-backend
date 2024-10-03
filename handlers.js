@@ -1,7 +1,6 @@
 import axios from "axios";
 import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
-import stripe from "stripe";
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(
   ',',
 );
@@ -113,36 +112,6 @@ const plaidResponse = await plaidClient.accountsGet({ access_token: accessToken 
 console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
   const accountId = plaidResponse.data.accounts[0].account_id;
 
-//
-//============================================
-
-  // const stripeRequest = {
-  //   access_token: accessToken,
-  //   account_id: accountId
-  // };
-
-  // const stripeTokenResponse = await plaidClient.processorStripeBankAccountTokenCreate(
-  //   stripeRequest
-  // );
-
-// console.log("stripeTokenResponse=", stripeTokenResponse);
-// console.log("stripeTokenResponse.data.stripe_bank_account_token=", stripeTokenResponse.data.stripe_bank_account_token);
-
-//===============================================
-//
-
-  // const stripeClient = stripe(process.env.STRIPE_TEST_SECRET_KEY);
-  // const stripeCustomer = await stripeClient.customers.create({
-  //   name: 'Any Name',
-  //   source: stripeTokenResponse.data.stripe_bank_account_token,
-  // });
-
-  // console.log("stripeCustomer=", stripeCustomer);
-
-
-
-  // taba pay
-//============================================
   const processorRequest = {
     access_token: accessToken,
     account_id: accountId,
@@ -157,14 +126,9 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
 
   const silaMoneyToken = processorTokenResponse.data.processor_token;
 
-//============================================
-
-
   const itemResponse = await plaidClient.itemGet({
     access_token: accessToken,
   });
-
-// console.log("itemResponse=data", itemResponse.data);
 
   const institutionId = itemResponse.data.item.institution_id;
   const instResponse = await plaidClient.institutionsGetById({
@@ -180,8 +144,6 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     name: institutionName,
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,
-    // stripe_bank_account_token: stripeTokenResponse.data.stripe_bank_account_token,
-    // tabapay_bank_account_token: processorTokenResponse.data.processor_token,
     silamoney_token: silaMoneyToken,
     silamoney_request_id: processorTokenResponse.data.request_id,
   };

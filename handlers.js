@@ -20,10 +20,18 @@ const plaidConfig = new Configuration({
 
 const plaidClient = new PlaidApi(plaidConfig);
 
+
+//
+//
+//
 const getWelcome = async (req, res) => {
   res.send("Welcome to Paymo!");
 }
 
+
+//
+//
+//
 const getBanks = async (req, res) => {
   const rows = await knex(process.env.BANKS_TABLE_NAME).select('id', 'name')
     .where({user_id: req.query.user_id})
@@ -33,6 +41,10 @@ const getBanks = async (req, res) => {
   res.send(rows);
 }
 
+
+//
+//
+//
 const getRecipients = async (req, res) => {
   const rows = await knex(process.env.RECIPIENTS_TABLE_NAME).select('id', 'name')
     .where({sender_user_id: req.query.sender_user_id})
@@ -42,6 +54,10 @@ const getRecipients = async (req, res) => {
   res.send(rows);
 }
 
+
+//
+//
+//
 const getUserByEmail = async (req, res) => {
   const managementAccessTokenRows = await knex('management_access_token').select('access_token')
     .catch((err) => { console.error(err); throw err; });
@@ -83,6 +99,10 @@ console.log("userData=", userData);
   res.send(userData);
 }
 
+
+//
+//
+//
 const createLinkToken = async (req, res) => {
   const tokenResponse = await plaidClient.linkTokenCreate({
     // user: { client_user_id: req.sessionID },
@@ -97,6 +117,32 @@ console.log("tokenResponse=", tokenResponse);
   res.json(tokenResponse.data);
 }
 
+
+//
+//
+//
+const generateSilaJwtToken = async () => {
+  const options = {
+    method: 'POST',
+    url: `https://${process.env.SILA_MONEY_API_URL}/0.2/auth_token`,
+    headers: {
+      app_handle: `${process.env.SILA_MONEY_APP_HANDLE}`,
+    },
+  };
+
+  let silaAccessToken;
+  await axios(options)
+    .then(res => {
+      silaAccessToken = res.access_token.token;
+    })
+    .catch(err => {console.log(err); throw err; });
+
+  return silaAccessToken;
+}
+
+//
+//
+//
 const exchangePublicToken = async (req, res) => {
   const exchangeResponse = await plaidClient.itemPublicTokenExchange({
     public_token: req.body.public_token,
@@ -152,26 +198,45 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     .catch((err) => { console.error(err); throw err; });
 
   //
+  // get sila jwt token
+  //
+
+  const silaJwtToken = generateSilaJwtToken();
+
+  //
   // Call Sila money link_account
   //
 
   const options = {
-    method: 'GET',
-    url: `https://${process.env.SILA_MONEY_API_URL}/link_account`,
+    method: 'POST',
+    url: `https://${process.env.SILA_MONEY_API_URL}/0.2/link_account`,
     headers: {
+      authorization: `Bearer ${silaJwtToken}`,
       app_handle: `${process.env.SILA_MONEY_APP_HANDLE}`,
     },
-    provider_token: silaMoneyToken,
-    provider: "plaid",
-    account_type: "Checking",
-    provider_token_type: "processor",
+    data: {
+      provider_token: silaMoneyToken,
+      provider: "plaid",
+      account_type: "CHECKING",
+      provider_token_type: "processor",
+    }
   };
 
-  const axiosResponse = await axios(options);
+  let linkAccountResponseData;
+  await axios(options)
+    .then(res => {
+      linkAccountResponseData = res.data;
+    })
+    // .catch(err => { console.log(err); throw err; });
 
+console.log("Sila Link Account response data=", linkAccountResponseData);
   res.json(true);
 }
 
+
+//
+//
+//
 const sendMoney = async (req, res) => {
 console.log("sendMoney: req.body=", req.body);
   // We are sending money from our account to selected recipient's account

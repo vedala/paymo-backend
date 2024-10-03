@@ -180,6 +180,7 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     // stripe_bank_account_token: stripeTokenResponse.data.stripe_bank_account_token,
     // tabapay_bank_account_token: processorTokenResponse.data.processor_token,
     silamoney_token: processorTokenResponse.data.processor_token,
+    silamoney_request_id: processorTokenResponse.data.request_id,
   };
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')

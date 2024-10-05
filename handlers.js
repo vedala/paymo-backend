@@ -231,7 +231,8 @@ console.log("silajwt=", silaJwtToken);
       header: {
         created: (new Date()).getTime(),
         app_handle: `${process.env.SILA_MONEY_APP_HANDLE}`,
-        user_handle: `${process.env.SILA_MONEY_APP_HANDLE}-user`,
+        // user_handle: `${process.env.SILA_MONEY_APP_HANDLE}-user`,
+        user_handle: `${process.env.SILA_MONEY_USER_HANDLE}`,
         version: "0.2",
         reference: uuidv4(),
       },

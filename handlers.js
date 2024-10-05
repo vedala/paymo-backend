@@ -1,6 +1,7 @@
 import axios from "axios";
 import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
+import { v4 as uuidv4 } from "uuid";
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(
   ',',
 );
@@ -121,19 +122,31 @@ console.log("tokenResponse=", tokenResponse);
 //
 //
 //
+
 const generateSilaJwtToken = async () => {
+  const currentTime = (new Date()).getTime();
+  const basicAuthString = 'Basic ' + Buffer.from(`${process.env.SILA_MONEY_CLIENT_ID}` + ':' + `${process.env.SILA_MONEY_CLIENT_SECRET}`).toString('base64');
+
   const options = {
     method: 'POST',
     url: `https://${process.env.SILA_MONEY_API_URL}/0.2/auth_token`,
     headers: {
-      app_handle: `${process.env.SILA_MONEY_APP_HANDLE}`,
+      authorization: basicAuthString,
     },
+    data: {
+      header: {
+        created: currentTime,
+        app_handle: `${process.env.SILA_MONEY_APP_HANDLE}`,
+        version: "0.2",
+        reference: uuidv4(),
+      },
+    }
   };
 
   let silaAccessToken;
   await axios(options)
     .then(res => {
-      silaAccessToken = res.access_token.token;
+      silaAccessToken = res.data.access_token.token;
     })
     .catch(err => {console.log(err); throw err; });
 
@@ -201,7 +214,8 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
   // get sila jwt token
   //
 
-  const silaJwtToken = generateSilaJwtToken();
+  const silaJwtToken = await generateSilaJwtToken();
+console.log("silajwt=", silaJwtToken);
 
   //
   // Call Sila money link_account
@@ -212,13 +226,22 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     url: `https://${process.env.SILA_MONEY_API_URL}/0.2/link_account`,
     headers: {
       authorization: `Bearer ${silaJwtToken}`,
-      app_handle: `${process.env.SILA_MONEY_APP_HANDLE}`,
     },
     data: {
+      header: {
+        created: (new Date()).getTime(),
+        app_handle: `${process.env.SILA_MONEY_APP_HANDLE}`,
+        // user_handle: `${process.env.SILA_MONEY_APP_HANDLE}-user`,
+        user_handle: `${process.env.SILA_MONEY_USER_HANDLE}`,
+        version: "0.2",
+        reference: uuidv4(),
+      },
       provider_token: silaMoneyToken,
       provider: "plaid",
       account_type: "CHECKING",
       provider_token_type: "processor",
+      selected_account_id: accountId,
+      account_name: institutionName,
     }
   };
 

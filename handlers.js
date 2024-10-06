@@ -161,6 +161,7 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     processorRequest,
   );
 
+console.log("processorTokenResponse.data=", processorTokenResponse);
   const itemResponse = await plaidClient.itemGet({
     access_token: accessToken,
   });
@@ -179,7 +180,8 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     name: institutionName,
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,
-    stripe_bank_account_token: stripeTokenResponse.data.stripe_bank_account_token,
+    moov_token: processorTokenResponse.data.processor_token,
+    moov_request_id: processorTokenResponse.data.request_id,
   };
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')

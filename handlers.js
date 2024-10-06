@@ -204,6 +204,7 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
   };
 
   const moovAccountCreateResponse = await moovClient.accounts.create(accountCreateObject);
+  const moovAccountId  = moovAccountCreateResponse.accountID;
 console.log("moovAccountCreateResponse=", moovAccountCreateResponse);
 // ===========================================
 
@@ -221,8 +222,9 @@ console.log("moovAccountCreateResponse=", moovAccountCreateResponse);
     name: institutionName,
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,
-    moov_token: processorTokenResponse.data.processor_token,
-    moov_request_id: processorTokenResponse.data.request_id,
+    moov_processor_token: processorTokenResponse.data.processor_token,
+    moov_processor_request_id: processorTokenResponse.data.request_id,
+    moov_account_id: moovAccountId,
   };
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')

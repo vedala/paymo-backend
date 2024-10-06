@@ -12,7 +12,8 @@ knex.schema.createTable('banks', (table) => {
   table.string('name')
   table.string('item_id')
   table.string('access_token')
-  table.string('stripe_bank_account_token')
+  table.string('moov_token')
+  table.string('moov_request_id')
 }).then( () => console.log("table created"))
 .catch( (err) => { console.log(err); throw err })
 .finally( () => {

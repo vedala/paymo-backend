@@ -1,6 +1,7 @@
 import axios from "axios";
 import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
+import { Moov } from "@moovio/node";
 import { v4 as uuidv4 } from "uuid";
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(
   ',',
@@ -127,6 +128,10 @@ const exchangePublicToken = async (req, res) => {
     public_token: req.body.public_token,
   });
 
+  const userId = req.body.user_id;
+  const userName = req.body.user_name;
+  const userEmail = req.body.user_email;
+
 console.log("exchangePublicToken: exchangeResponse.data", exchangeResponse.data);
 console.log("exchangePublicToken: exchangeResponse.data.access_token=", exchangeResponse.data.access_token);
 
@@ -161,10 +166,46 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
     processorRequest,
   );
 
-console.log("processorTokenResponse.data=", processorTokenResponse);
+console.log("processorTokenResponse.data=", processorTokenResponse.data);
   const itemResponse = await plaidClient.itemGet({
     access_token: accessToken,
   });
+
+// ===========================================
+  const moovCredentials = {
+    accountID: process.env.MOOV_ACCOUNT_ID,
+    publicKey: process.env.MOOV_PUBLIC_KEY,
+    secretKey: process.env.MOOV_SECRET_KEY,
+    domain: process.env.MOOV_DOMAIN,
+  };
+
+  const moovClient = new Moov(moovCredentials);
+
+  const moovAccountCreateProfile = {
+    "individual": {
+    // name: { firstName: `${userName}first`, lastName: `${userName}last`},
+    name: { firstName: `userNamefirst`, lastName: `userNamelast`},
+    phone: {number: "123-456-7890", countryCode: "1"},
+    email: `${userEmail}`,
+    address: {addressLine1: "123 Main St", city: "Los Angeles", stateOrProvince: "CA", postalCode:"90001", country: "US"},
+    birthDateProvided: false,
+    governmentIdProvided: false,
+    }
+  };
+
+
+  const accountCreateObject = {
+    accountType: "individual",
+    profile: moovAccountCreateProfile,
+    metadata: { metaKey1: "metaValue1" },
+    termsOfService: null,
+    customerSupport: null,
+    settings: null,
+  };
+
+  const moovAccountCreateResponse = await moovClient.accounts.create(accountCreateObject);
+console.log("moovAccountCreateResponse=", moovAccountCreateResponse);
+// ===========================================
 
   const institutionId = itemResponse.data.item.institution_id;
   const instResponse = await plaidClient.institutionsGetById({
@@ -176,7 +217,7 @@ console.log("processorTokenResponse.data=", processorTokenResponse);
   const institutionName = instResponse.data.institution.name;
 
   const itemInfo = {
-    user_id: req.body.user_id,
+    user_id: userId,
     name: institutionName,
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,
@@ -186,6 +227,7 @@ console.log("processorTokenResponse.data=", processorTokenResponse);
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')
     .catch((err) => { console.error(err); throw err; });
+
 
   res.json(true);
 }

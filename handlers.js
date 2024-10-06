@@ -1,6 +1,7 @@
 import axios from "axios";
 import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
+import { Moov } from "@moovio/node";
 import { v4 as uuidv4 } from "uuid";
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(
   ',',
@@ -187,6 +188,16 @@ console.log("processorTokenResponse.data=", processorTokenResponse);
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')
     .catch((err) => { console.error(err); throw err; });
 
+// ===========================================
+  const moovCredentials = {
+    accountID: process.env.MOOV_ACCOUNT_ID,
+    publicKey: process.env.MOOV_PUBLIC_KEY,
+    secretKey: process.env.MOOV_SECRET_KEY,
+    domain: process.env.MOOV_DOMAIN,
+  };
+
+  const moovClient = new Moov(moovCredentials);
+// ===========================================
   res.json(true);
 }
 

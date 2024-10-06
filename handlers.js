@@ -142,20 +142,6 @@ const plaidResponse = await plaidClient.accountsGet({ access_token: accessToken 
 console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
   const accountId = plaidResponse.data.accounts[0].account_id;
 
-// ===========================================
-//   const stripeRequest = {
-//     access_token: accessToken,
-//     account_id: accountId
-//   };
-
-
-//   const stripeTokenResponse = await plaidClient.processorStripeBankAccountTokenCreate(
-//     stripeRequest
-//   );
-
-// console.log("stripeTokenResponse.data.stripe_bank_account_token=", stripeTokenResponse.data.stripe_bank_account_token);
-// ===========================================
-
   const processorRequest = {
     access_token: accessToken,
     account_id: accountId,

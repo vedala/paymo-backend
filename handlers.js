@@ -151,6 +151,16 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
 // console.log("stripeTokenResponse.data.stripe_bank_account_token=", stripeTokenResponse.data.stripe_bank_account_token);
 // ===========================================
 
+  const processorRequest = {
+    access_token: accessToken,
+    account_id: accountId,
+    processor: 'moov',
+  }
+
+  const processorTokenResponse = await plaidClient.processorTokenCreate(
+    processorRequest,
+  );
+
   const itemResponse = await plaidClient.itemGet({
     access_token: accessToken,
   });

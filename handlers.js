@@ -1,7 +1,7 @@
 import axios from "axios";
 import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
-import { Moov } from "@moovio/node";
+import { Moov, CAPABILITIES, SCOPES } from "@moovio/node";
 import { v4 as uuidv4 } from "uuid";
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(
   ',',
@@ -158,6 +158,9 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
   });
 
 // ===========================================
+  //
+  // moov client creation
+  //
   const moovCredentials = {
     accountID: process.env.MOOV_ACCOUNT_ID,
     publicKey: process.env.MOOV_PUBLIC_KEY,
@@ -167,6 +170,23 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
 
   const moovClient = new Moov(moovCredentials);
 
+  //
+  // moov get terms of service token
+  //
+
+//   const moovTermsOfServiceToken = await moovClient.generateToken(
+//     [
+//       SCOPES.ACCOUNTS_CREATE,
+//       SCOPES.ACCOUNTS_READ,
+//     ],
+//     process.env.MOOV_ACCOUNT_ID);
+// console.log("mooveTermsOfServiceToken=", moovTermsOfServiceToken);
+
+// moovClient.accounts.acceptTermsOfService();
+
+  //
+  // moov account creation
+  //
   const moovAccountCreateProfile = {
     "individual": {
     // name: { firstName: `${userName}first`, lastName: `${userName}last`},
@@ -174,11 +194,12 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
     phone: {number: "123-456-7890", countryCode: "1"},
     email: `${userEmail}`,
     address: {addressLine1: "123 Main St", city: "Los Angeles", stateOrProvince: "CA", postalCode:"90001", country: "US"},
-    birthDateProvided: false,
-    governmentIdProvided: false,
+    // birthDateProvided: false,
+    // governmentIdProvided: false,
+    birthDate: { "day": 9, "month": 11, "year": 1989 },
+    governmentId: { "ssn": {full: "123-45-0000", lastFour: "0000"}},
     }
   };
-
 
   const accountCreateObject = {
     accountType: "individual",

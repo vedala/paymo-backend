@@ -213,6 +213,16 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
   const moovAccountCreateResponse = await moovClient.accounts.create(accountCreateObject);
   const moovAccountId  = moovAccountCreateResponse.accountID;
 console.log("moovAccountCreateResponse=", moovAccountCreateResponse);
+
+  //
+  // moov add capabilities
+  //
+  const moovRequestCapabilitiesResponse = await moovClient.capabilities.requestCapabilities(
+    moovAccountId,
+    [CAPABILITIES.SEND_FUNDS, CAPABILITIES.WALLET],
+  );
+
+console.log("moovRequestCapabilitiesResponse=", moovRequestCapabilitiesResponse);
 // ===========================================
 
   const institutionId = itemResponse.data.item.institution_id;

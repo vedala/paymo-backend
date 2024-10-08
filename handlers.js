@@ -3,6 +3,7 @@ import getKnexObj from "./getKnexObj.js";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { Moov, CAPABILITIES, SCOPES } from "@moovio/node";
 import { v4 as uuidv4 } from "uuid";
+import { auth } from "express-oauth2-jwt-bearer";
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(
   ',',
 );
@@ -171,17 +172,24 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
   const moovClient = new Moov(moovCredentials);
 
   //
-  // moov get terms of service token
+  // moov get access token
   //
 
-//   const moovTermsOfServiceToken = await moovClient.generateToken(
-//     [
-//       SCOPES.ACCOUNTS_CREATE,
-//       SCOPES.ACCOUNTS_READ,
-//     ],
-//     process.env.MOOV_ACCOUNT_ID);
-// console.log("mooveTermsOfServiceToken=", moovTermsOfServiceToken);
+  const moovAccessToken = await moovClient.generateToken(
+    [
+      SCOPES.ACCOUNTS_CREATE,
+      SCOPES.ACCOUNTS_READ,
+    ],
+    process.env.MOOV_ACCOUNT_ID);
+console.log("moovAccessToken=", moovAccessToken);
 
+  const moovTOSToken = await axios.get("https://api.moov.io/tos-token", {
+    headers: {
+      authorization: `Bearer ${moovAccessToken}`
+    }
+  });
+
+console.log("moovTOSToken=", moovTOSToken);
 // moovClient.accounts.acceptTermsOfService();
 
   //
@@ -248,7 +256,7 @@ console.log("moovRequestCapabilitiesResponse=", moovRequestCapabilitiesResponse)
     .catch((err) => { console.error(err); throw err; });
 
 
-  res.json(true);
+  res.json({ moovAccessToken });
 }
 
 

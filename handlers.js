@@ -183,13 +183,14 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
     process.env.MOOV_ACCOUNT_ID);
 console.log("moovAccessToken=", moovAccessToken);
 
-  const moovTOSToken = await axios.get("https://api.moov.io/tos-token", {
-    headers: {
-      authorization: `Bearer ${moovAccessToken}`
-    }
-  });
+  // const moovTOSToken = await axios.get("https://api.moov.io/tos-token", {
+  //   headers: {
+  //     authorization: `Bearer ${moovAccessToken}`
+  //   }
+  // });
 
-console.log("moovTOSToken=", moovTOSToken);
+// console.log("moovTOSToken=", moovTOSToken);
+// console.log("moovClient.accounts.termsOfService=", moovClient.accounts.termsOfService);
 // moovClient.accounts.acceptTermsOfService();
 
   //

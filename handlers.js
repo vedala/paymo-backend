@@ -23,6 +23,39 @@ const plaidConfig = new Configuration({
 
 const plaidClient = new PlaidApi(plaidConfig);
 
+//
+// Util: getMoovTermsToken
+//
+const utilGetMoovTermsToken = async (moovAccessToken) => {
+
+  const axiosResponse = await axios.get("https://api.moov.io/tos-token", {
+    headers: {
+      Authorization: `Bearer ${moovAccessToken}`,
+      Origin: "https://paymo.com",
+      Referer: "https://paymo.com",
+    }
+  });
+
+  const tosToken = await axiosResponse.data.token;
+console.log("tosToken=", tosToken);
+  return tosToken;
+}
+
+const utilPatchTermToken = async (moovAccessToken, accountId, tosToken) => {
+  const updatedAccount = {
+    termsOfService: tosToken,
+  }
+
+  const axiosResponse = await axios.patch(`https://api.moov.io/accounts/${accountId}`,
+    updatedAccount,
+    {
+      headers: {
+        Authorization: `Bearer ${moovAccessToken}`,
+      }
+    }
+    );
+
+}
 
 //
 //
@@ -210,6 +243,8 @@ console.log("moovAccessToken=", moovAccessToken);
     }
   };
 
+  const tosToken = await utilGetMoovTermsToken(moovAccessToken);
+
   const accountCreateObject = {
     accountType: "individual",
     profile: moovAccountCreateProfile,
@@ -232,6 +267,12 @@ console.log("moovAccountCreateResponse=", moovAccountCreateResponse);
   );
 
 console.log("moovRequestCapabilitiesResponse=", moovRequestCapabilitiesResponse);
+
+  //
+  // moov add terms token
+  //
+  // await utilPatchTermToken(moovAccessToken, moovAccountId, tosToken);
+
 // ===========================================
 
   const institutionId = itemResponse.data.item.institution_id;

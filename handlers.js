@@ -264,6 +264,26 @@ console.log("moovRequestCapabilitiesResponse=", moovRequestCapabilitiesResponse)
 //
 //
 //
+const generateTosToken = async (req, res) => {
+  const moovAccessToken = req.body.moovAccessToken;
+console.log("moovAccessToken2=", moovAccessToken);
+  const axiosResponse = await axios.get("https://api.moov.io/tos-token", {
+    headers: {
+      Authorization: `Bearer ${moovAccessToken}`,
+      Origin: "https://paymo.com",
+      Referer: "https://paymo.com",
+    }
+  });
+
+  const tosToken = axiosResponse.data.token;
+console.log("tosToken=", tosToken);
+  res.json({tosToken});
+}
+
+
+//
+//
+//
 const sendMoney = async (req, res) => {
 console.log("sendMoney: req.body=", req.body);
   // We are sending money from our account to selected recipient's account
@@ -281,5 +301,6 @@ export {
   getUserByEmail,
   createLinkToken,
   exchangePublicToken,
+  generateTosToken,
   sendMoney,
 };

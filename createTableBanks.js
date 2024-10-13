@@ -12,9 +12,8 @@ knex.schema.createTable('banks', (table) => {
   table.string('name')
   table.string('item_id')
   table.string('access_token')
-  table.string('moov_processor_token')
-  table.string('moov_processor_request_id')
-  table.string('moov_account_id')
+  table.string('dwolla_processor_token')
+  table.string('dwolla_processor_request_id')
 }).then( () => console.log("table created"))
 .catch( (err) => { console.log(err); throw err })
 .finally( () => {

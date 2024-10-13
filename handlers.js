@@ -24,40 +24,6 @@ const plaidConfig = new Configuration({
 const plaidClient = new PlaidApi(plaidConfig);
 
 //
-// Util: getMoovTermsToken
-//
-const utilGetMoovTermsToken = async (moovAccessToken) => {
-
-  const axiosResponse = await axios.get("https://api.moov.io/tos-token", {
-    headers: {
-      Authorization: `Bearer ${moovAccessToken}`,
-      Origin: "https://paymo.com",
-      Referer: "https://paymo.com",
-    }
-  });
-
-  const tosToken = await axiosResponse.data.token;
-console.log("tosToken=", tosToken);
-  return tosToken;
-}
-
-const utilPatchTermToken = async (moovAccessToken, accountId, tosToken) => {
-  const updatedAccount = {
-    termsOfService: tosToken,
-  }
-
-  const axiosResponse = await axios.patch(`https://api.moov.io/accounts/${accountId}`,
-    updatedAccount,
-    {
-      headers: {
-        Authorization: `Bearer ${moovAccessToken}`,
-      }
-    }
-    );
-
-}
-
-//
 //
 //
 const getWelcome = async (req, res) => {
@@ -179,7 +145,7 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
   const processorRequest = {
     access_token: accessToken,
     account_id: accountId,
-    processor: 'moov',
+    processor: 'dwolla',
   }
 
   const processorTokenResponse = await plaidClient.processorTokenCreate(
@@ -192,86 +158,6 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
   });
 
 // ===========================================
-  //
-  // moov client creation
-  //
-  const moovCredentials = {
-    accountID: process.env.MOOV_ACCOUNT_ID,
-    publicKey: process.env.MOOV_PUBLIC_KEY,
-    secretKey: process.env.MOOV_SECRET_KEY,
-    domain: process.env.MOOV_DOMAIN,
-  };
-
-  const moovClient = new Moov(moovCredentials);
-
-  //
-  // moov get access token
-  //
-
-  const moovAccessToken = await moovClient.generateToken(
-    [
-      SCOPES.ACCOUNTS_CREATE,
-      SCOPES.ACCOUNTS_READ,
-    ],
-    process.env.MOOV_ACCOUNT_ID);
-console.log("moovAccessToken=", moovAccessToken);
-
-  // const moovTOSToken = await axios.get("https://api.moov.io/tos-token", {
-  //   headers: {
-  //     authorization: `Bearer ${moovAccessToken}`
-  //   }
-  // });
-
-// console.log("moovTOSToken=", moovTOSToken);
-// console.log("moovClient.accounts.termsOfService=", moovClient.accounts.termsOfService);
-// moovClient.accounts.acceptTermsOfService();
-
-  //
-  // moov account creation
-  //
-  const moovAccountCreateProfile = {
-    "individual": {
-    // name: { firstName: `${userName}first`, lastName: `${userName}last`},
-    name: { firstName: `userNamefirst`, lastName: `userNamelast`},
-    phone: {number: "123-456-7890", countryCode: "1"},
-    email: `${userEmail}`,
-    address: {addressLine1: "123 Main St", city: "Los Angeles", stateOrProvince: "CA", postalCode:"90001", country: "US"},
-    // birthDateProvided: false,
-    // governmentIdProvided: false,
-    birthDate: { "day": 9, "month": 11, "year": 1989 },
-    governmentId: { "ssn": {full: "123-45-0000", lastFour: "0000"}},
-    }
-  };
-
-  const tosToken = await utilGetMoovTermsToken(moovAccessToken);
-
-  const accountCreateObject = {
-    accountType: "individual",
-    profile: moovAccountCreateProfile,
-    metadata: { metaKey1: "metaValue1" },
-    termsOfService: null,
-    customerSupport: null,
-    settings: null,
-  };
-
-  const moovAccountCreateResponse = await moovClient.accounts.create(accountCreateObject);
-  const moovAccountId  = moovAccountCreateResponse.accountID;
-console.log("moovAccountCreateResponse=", moovAccountCreateResponse);
-
-  //
-  // moov add capabilities
-  //
-  const moovRequestCapabilitiesResponse = await moovClient.capabilities.requestCapabilities(
-    moovAccountId,
-    [CAPABILITIES.SEND_FUNDS, CAPABILITIES.WALLET],
-  );
-
-console.log("moovRequestCapabilitiesResponse=", moovRequestCapabilitiesResponse);
-
-  //
-  // moov add terms token
-  //
-  // await utilPatchTermToken(moovAccessToken, moovAccountId, tosToken);
 
 // ===========================================
 
@@ -289,9 +175,8 @@ console.log("moovRequestCapabilitiesResponse=", moovRequestCapabilitiesResponse)
     name: institutionName,
     item_id: exchangeResponse.data.item_id,
     access_token: exchangeResponse.data.access_token,
-    moov_processor_token: processorTokenResponse.data.processor_token,
-    moov_processor_request_id: processorTokenResponse.data.request_id,
-    moov_account_id: moovAccountId,
+    dwolla_processor_token: processorTokenResponse.data.processor_token,
+    dwolla_processor_request_id: processorTokenResponse.data.request_id,
   };
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')
@@ -300,27 +185,6 @@ console.log("moovRequestCapabilitiesResponse=", moovRequestCapabilitiesResponse)
 
   res.json({ moovAccessToken });
 }
-
-
-//
-//
-//
-const generateTosToken = async (req, res) => {
-  const moovAccessToken = req.body.moovAccessToken;
-console.log("moovAccessToken2=", moovAccessToken);
-  const axiosResponse = await axios.get("https://api.moov.io/tos-token", {
-    headers: {
-      Authorization: `Bearer ${moovAccessToken}`,
-      Origin: "https://paymo.com",
-      Referer: "https://paymo.com",
-    }
-  });
-
-  const tosToken = axiosResponse.data.token;
-console.log("tosToken=", tosToken);
-  res.json({tosToken});
-}
-
 
 //
 //
@@ -342,6 +206,5 @@ export {
   getUserByEmail,
   createLinkToken,
   exchangePublicToken,
-  generateTosToken,
   sendMoney,
 };

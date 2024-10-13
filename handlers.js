@@ -41,11 +41,12 @@ const createDwollaCustomer = async (firstName, lastName) => {
       {
         headers: {
           'content-type': 'application/json',
-          Authorization: `Bearer ${DWOLLA_ACCESS_TOKEN}`,
+          Authorization: `Bearer ${process.env.DWOLLA_ACCESS_TOKEN}`,
           Accept: 'application/vnd.dwolla.v1.hal+json',
         }
       },
     );
+    return response.headers.location;
   } catch (err) {
     console.log('err: ', err);
     throw new Error("Error on api call to Dwolla /customers");

@@ -55,6 +55,37 @@ const createDwollaCustomer = async (firstName, lastName) => {
 
 
 //
+// send processor token to Dwolla customer url to create customer Funding source
+// and obtain customer funding source url
+//
+const createDwollaCustomerFundingSource = async (
+  account,
+  customerUrl,
+  processorToken
+) => {
+  try {
+    const response = await axios.post(
+      `${customerUrl}/funding-sources`,
+      {
+        plaidToken: processorToken,
+        name: account.subtype,
+      },
+      {
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${process.env.DWOLLA_ACCESS_TOKEN}`,
+          Accept: 'application/vnd.dwolla.v1.hal+json',
+        },
+      }
+    );
+    return response.headers.location;
+  } catch (err) {
+    console.log('err:', err);
+    throw new Error("Error on api call to Dwolla /funding-sources");
+  }
+};
+
+//
 //
 //
 const getWelcome = async (req, res) => {
@@ -192,10 +223,19 @@ const exchangePublicToken = async (req, res) => {
   const processorTokenResponse = await plaidClient.processorTokenCreate(
     processorRequest,
   );
+  const processorToken = processorTokenResponse.data.processor_token;
   console.log("processorTokenResponse.data=", processorTokenResponse.data);
 
   const dwollaCustomerUrl = await createDwollaCustomer(userFirstName, userLastName);
   console.log("dwollaCustomerUrl=", dwollaCustomerUrl);
+
+  const dwollaFundingSourceUrl = await createDwollaCustomerFundingSource(
+    plaidResponse.data.accounts[0],
+    dwollaCustomerUrl,
+    processorToken
+  );
+
+  console.log("dwollaFundingSourceUrl=", dwollaFundingSourceUrl);
 
   const itemResponse = await plaidClient.itemGet({
     access_token: accessToken,

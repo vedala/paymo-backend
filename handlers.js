@@ -183,7 +183,7 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
     .catch((err) => { console.error(err); throw err; });
 
 
-  res.json({ moovAccessToken });
+  res.json(true);
 }
 
 //

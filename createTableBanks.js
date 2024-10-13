@@ -14,6 +14,8 @@ knex.schema.createTable('banks', (table) => {
   table.string('access_token')
   table.string('dwolla_processor_token')
   table.string('dwolla_processor_request_id')
+  table.string('dwolla_customer_url')
+  table.string('dwolla_funding_source_url')
 }).then( () => console.log("table created"))
 .catch( (err) => { console.log(err); throw err })
 .finally( () => {

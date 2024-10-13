@@ -257,6 +257,8 @@ const exchangePublicToken = async (req, res) => {
     access_token: exchangeResponse.data.access_token,
     dwolla_processor_token: processorTokenResponse.data.processor_token,
     dwolla_processor_request_id: processorTokenResponse.data.request_id,
+    dwolla_customer_url: dwollaCustomerUrl,
+    dwolla_funding_source_url: dwollaFundingSourceUrl,
   };
 
   await knex(process.env.BANKS_TABLE_NAME).insert(itemInfo).returning('id')

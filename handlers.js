@@ -26,6 +26,36 @@ const plaidClient = new PlaidApi(plaidConfig);
 //
 //
 //
+const createDwollaCustomer = async (firstName, lastName) => {
+  try {
+    const response = await axios.post(
+      `${process.env.DWOLLA_BASE_URL}/customers`,
+      {
+        firstName,
+        lastName,
+        email: `${Math.random() // because Dwolla does not allow identical emails, and sandbox data is always the same.
+          .toString(36)
+          .slice(2)}@sampleApp.com`,
+        ipAddress: '99.99.99.99',
+      },
+      {
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${DWOLLA_ACCESS_TOKEN}`,
+          Accept: 'application/vnd.dwolla.v1.hal+json',
+        }
+      },
+    );
+  } catch (err) {
+    console.log('err: ', err);
+    throw new Error("Error on api call to Dwolla /customers");
+  }
+};
+
+
+//
+//
+//
 const getWelcome = async (req, res) => {
   res.send("Welcome to Paymo!");
 }
@@ -115,7 +145,7 @@ const createLinkToken = async (req, res) => {
     country_codes: ["US"],
     // redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
   });
-console.log("tokenResponse=", tokenResponse);
+console.log("createLink tokenResponse.data=", tokenResponse.data);
   res.json(tokenResponse.data);
 }
 
@@ -132,14 +162,24 @@ const exchangePublicToken = async (req, res) => {
   const userName = req.body.user_name;
   const userEmail = req.body.user_email;
 
-console.log("exchangePublicToken: exchangeResponse.data", exchangeResponse.data);
-console.log("exchangePublicToken: exchangeResponse.data.access_token=", exchangeResponse.data.access_token);
+  //
+  // userName is received from frontend, which is Auth0 userName (it is set to email).
+  // create first name and last name by cutting the value before "@"
+  const emailNamePortion = userName.split("@")[0];
+  const userFirstName = `${emailNamePortion}First`;
+  const userLastName = `${emailNamePortion}Last`;
+
+  console.log("exchangePublicToken: req.userName=", userName);
+  console.log("exchangePublicToken: req.userEmail=", userEmail);
+  console.log("exchangePublicToken: exchangeResponse.data", exchangeResponse.data);
+  console.log("exchangePublicToken: exchangeResponse.data.access_token=", exchangeResponse.data.access_token);
 
   const accessToken = exchangeResponse.data.access_token;
 
 
-const plaidResponse = await plaidClient.accountsGet({ access_token: accessToken });
-console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
+  const plaidResponse = await plaidClient.accountsGet({ access_token: accessToken });
+  console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
+
   const accountId = plaidResponse.data.accounts[0].account_id;
 
   const processorRequest = {
@@ -151,15 +191,14 @@ console.log("plaidResponse.data.accounts=", plaidResponse.data.accounts);
   const processorTokenResponse = await plaidClient.processorTokenCreate(
     processorRequest,
   );
+  console.log("processorTokenResponse.data=", processorTokenResponse.data);
 
-console.log("processorTokenResponse.data=", processorTokenResponse.data);
+  const dwollaCustomerUrl = await createDwollaCustomer(userFirstName, userLastName);
+  console.log("dwollaCustomerUrl=", dwollaCustomerUrl);
+
   const itemResponse = await plaidClient.itemGet({
     access_token: accessToken,
   });
-
-// ===========================================
-
-// ===========================================
 
   const institutionId = itemResponse.data.item.institution_id;
   const instResponse = await plaidClient.institutionsGetById({
@@ -183,7 +222,7 @@ console.log("processorTokenResponse.data=", processorTokenResponse.data);
     .catch((err) => { console.error(err); throw err; });
 
 
-  res.json({ moovAccessToken });
+  res.json(true);
 }
 
 //

@@ -36,6 +36,7 @@ const createDwollaCustomer = async (firstName, lastName, userEmail) => {
         email: `${Math.random() // because Dwolla does not allow identical emails, and sandbox data is always the same.
           .toString(36)
           .slice(2)}${userEmail}`,
+        ipAddress: '99.99.99.99',
         type: 'personal',
         address1: '123 Main St',
         city: 'New York',

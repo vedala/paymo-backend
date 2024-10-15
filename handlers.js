@@ -275,17 +275,40 @@ const exchangePublicToken = async (req, res) => {
   res.json(true);
 }
 
+const getFundingSourceByRecipientId = async (recipientId) => {
+  // get recipient_user_id from recipients table
+  const recipientRows = await knex(process.env.RECIPIENTS_TABLE_NAME).select('recipient_user_id')
+    .where({id: recipientId})
+    .catch((err) => { console.error(err); throw err; });
+
+console.log("recipientRows=", recipientRows);
+  const recipientUserId = recipientRows[0].recipient_user_id;
+
+  // get from banks table using user_id
+  const bankRows = await knex(process.env.BANKS_TABLE_NAME).select('dwolla_funding_source_url')
+    .where({user_id: recipientUserId})
+    .catch((err) => { console.error(err); throw err; });
+
+console.log("bankRows=", bankRows);
+  const dwollaFundingSourceUrl = bankRows[0].dwolla_funding_source_url;
+  return dwollaFundingSourceUrl;
+}
+
+const getFundingSrouceByBankId = async (bankId) => {
+
+}
+
 //
 //
 //
 const sendMoney = async (req, res) => {
 console.log("sendMoney: req.body=", req.body);
-  // We are sending money from our account to selected recipient's account
-  // Need to figure out:
-  //    - How to deduct money from our account
-  //    - How to send money to a recipient
-  //      (The charges API seems to be designed for getting money from recipient's account
-  //       to ours).
+  // get sender funding source
+
+  //
+  const recipientFundingSourceUrl = getFundingSourceByRecipientId(req.body.recipient_id);
+  // make a transfer
+  // save transfer url to database
 }
 
 export {

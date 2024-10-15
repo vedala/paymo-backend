@@ -281,7 +281,6 @@ const getFundingSourceByRecipientId = async (recipientId) => {
     .where({id: recipientId})
     .catch((err) => { console.error(err); throw err; });
 
-console.log("recipientRows=", recipientRows);
   const recipientUserId = recipientRows[0].recipient_user_id;
 
   // get from banks table using user_id
@@ -289,13 +288,17 @@ console.log("recipientRows=", recipientRows);
     .where({user_id: recipientUserId})
     .catch((err) => { console.error(err); throw err; });
 
-console.log("bankRows=", bankRows);
   const dwollaFundingSourceUrl = bankRows[0].dwolla_funding_source_url;
   return dwollaFundingSourceUrl;
 }
 
 const getFundingSrouceByBankId = async (bankId) => {
+  const bankRows = await knex(process.env.BANKS_TABLE_NAME).select('dwolla_funding_source_url')
+    .where({id: bankId})
+    .catch((err) => { console.error(err); throw err; });
 
+  const dwollaFundingSourceUrl = bankRows[0].dwolla_funding_source_url;
+  return dwollaFundingSourceUrl;
 }
 
 //
@@ -304,9 +307,14 @@ const getFundingSrouceByBankId = async (bankId) => {
 const sendMoney = async (req, res) => {
 console.log("sendMoney: req.body=", req.body);
   // get sender funding source
+  const senderFundingSourceUrl = await getFundingSrouceByBankId(req.body.bank_id);
 
-  //
-  const recipientFundingSourceUrl = getFundingSourceByRecipientId(req.body.recipient_id);
+console.log("sender funding source url=", senderFundingSourceUrl);
+
+  // get recipeint funding source
+  const recipientFundingSourceUrl = await getFundingSourceByRecipientId(req.body.recipient_id);
+
+console.log("recipient funding source url=", recipientFundingSourceUrl);
   // make a transfer
   // save transfer url to database
 }

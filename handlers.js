@@ -26,7 +26,7 @@ const plaidClient = new PlaidApi(plaidConfig);
 //
 //
 //
-const createDwollaCustomer = async (firstName, lastName) => {
+const createDwollaCustomer = async (firstName, lastName, userEmail) => {
   try {
     const response = await axios.post(
       `${process.env.DWOLLA_BASE_URL}/customers`,
@@ -35,8 +35,14 @@ const createDwollaCustomer = async (firstName, lastName) => {
         lastName,
         email: `${Math.random() // because Dwolla does not allow identical emails, and sandbox data is always the same.
           .toString(36)
-          .slice(2)}@sampleApp.com`,
-        ipAddress: '99.99.99.99',
+          .slice(2)}${userEmail}`,
+        type: 'personal',
+        address1: '123 Main St',
+        city: 'New York',
+        state: 'NY',
+        postalCode: '10001',
+        dateOfBirth: '1990-07-25',
+        ssn: "1234"
       },
       {
         headers: {
@@ -226,7 +232,7 @@ const exchangePublicToken = async (req, res) => {
   const processorToken = processorTokenResponse.data.processor_token;
   console.log("processorTokenResponse.data=", processorTokenResponse.data);
 
-  const dwollaCustomerUrl = await createDwollaCustomer(userFirstName, userLastName);
+  const dwollaCustomerUrl = await createDwollaCustomer(userFirstName, userLastName, userEmail);
   console.log("dwollaCustomerUrl=", dwollaCustomerUrl);
 
   const dwollaFundingSourceUrl = await createDwollaCustomerFundingSource(

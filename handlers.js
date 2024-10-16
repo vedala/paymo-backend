@@ -301,21 +301,70 @@ const getFundingSrouceByBankId = async (bankId) => {
   return dwollaFundingSourceUrl;
 }
 
+const dwollaTransfer = async (
+  sourceUrl,
+  destinationUrl,
+  amount,
+) => {
+  const requestBody = {
+    _links: {
+      source: {
+        href: sourceUrl,
+      },
+      destination: {
+        href: destinationUrl,
+      },
+    },
+    amount: {
+      currency: "USD",
+      value: amount,
+    },
+  };
+
+  try {
+    const transferResponse = await axios.post(
+      `${process.env.DWOLLA_BASE_URL}/transfers`,
+      requestBody,
+      {
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${process.env.DWOLLA_ACCESS_TOKEN}`,
+          Accept: 'application/vnd.dwolla.v1.hal+json',
+        }
+      }
+    );
+    return transferResponse.headers.location
+  } catch (err) {
+    console.log('err: ', err);
+    throw new Error("Error on api call to Dwolla /transfers");
+  };
+}
+
 //
 //
 //
 const sendMoney = async (req, res) => {
-console.log("sendMoney: req.body=", req.body);
+  console.log("sendMoney: req.body=", req.body);
+
   // get sender funding source
   const senderFundingSourceUrl = await getFundingSrouceByBankId(req.body.bank_id);
 
-console.log("sender funding source url=", senderFundingSourceUrl);
+  console.log("sender funding source url=", senderFundingSourceUrl);
 
   // get recipeint funding source
   const recipientFundingSourceUrl = await getFundingSourceByRecipientId(req.body.recipient_id);
 
-console.log("recipient funding source url=", recipientFundingSourceUrl);
+  console.log("recipient funding source url=", recipientFundingSourceUrl);
+
   // make a transfer
+  const transferUrl = await dwollaTransfer(
+    senderFundingSourceUrl,
+    recipientFundingSourceUrl,
+    req.body.amount,
+  );
+
+  console.log("transferUrl=", transferUrl);
+
   // save transfer url to database
 }
 

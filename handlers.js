@@ -275,17 +275,97 @@ const exchangePublicToken = async (req, res) => {
   res.json(true);
 }
 
+const getFundingSourceByRecipientId = async (recipientId) => {
+  // get recipient_user_id from recipients table
+  const recipientRows = await knex(process.env.RECIPIENTS_TABLE_NAME).select('recipient_user_id')
+    .where({id: recipientId})
+    .catch((err) => { console.error(err); throw err; });
+
+  const recipientUserId = recipientRows[0].recipient_user_id;
+
+  // get from banks table using user_id
+  const bankRows = await knex(process.env.BANKS_TABLE_NAME).select('dwolla_funding_source_url')
+    .where({user_id: recipientUserId})
+    .catch((err) => { console.error(err); throw err; });
+
+  const dwollaFundingSourceUrl = bankRows[0].dwolla_funding_source_url;
+  return dwollaFundingSourceUrl;
+}
+
+const getFundingSrouceByBankId = async (bankId) => {
+  const bankRows = await knex(process.env.BANKS_TABLE_NAME).select('dwolla_funding_source_url')
+    .where({id: bankId})
+    .catch((err) => { console.error(err); throw err; });
+
+  const dwollaFundingSourceUrl = bankRows[0].dwolla_funding_source_url;
+  return dwollaFundingSourceUrl;
+}
+
+const dwollaTransfer = async (
+  sourceUrl,
+  destinationUrl,
+  amount,
+) => {
+  const requestBody = {
+    _links: {
+      source: {
+        href: sourceUrl,
+      },
+      destination: {
+        href: destinationUrl,
+      },
+    },
+    amount: {
+      currency: "USD",
+      value: amount,
+    },
+  };
+
+  try {
+    const transferResponse = await axios.post(
+      `${process.env.DWOLLA_BASE_URL}/transfers`,
+      requestBody,
+      {
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${process.env.DWOLLA_ACCESS_TOKEN}`,
+          Accept: 'application/vnd.dwolla.v1.hal+json',
+        }
+      }
+    );
+    return transferResponse.headers.location
+  } catch (err) {
+    console.log('err: ', err);
+    throw new Error("Error on api call to Dwolla /transfers");
+  };
+}
+
 //
 //
 //
 const sendMoney = async (req, res) => {
-console.log("sendMoney: req.body=", req.body);
-  // We are sending money from our account to selected recipient's account
-  // Need to figure out:
-  //    - How to deduct money from our account
-  //    - How to send money to a recipient
-  //      (The charges API seems to be designed for getting money from recipient's account
-  //       to ours).
+  console.log("sendMoney: req.body=", req.body);
+
+  // get sender funding source
+  const senderFundingSourceUrl = await getFundingSrouceByBankId(req.body.bank_id);
+
+  console.log("sender funding source url=", senderFundingSourceUrl);
+
+  // get recipeint funding source
+  const recipientFundingSourceUrl = await getFundingSourceByRecipientId(req.body.recipient_id);
+
+  console.log("recipient funding source url=", recipientFundingSourceUrl);
+
+  // make a transfer
+  const transferUrl = await dwollaTransfer(
+    senderFundingSourceUrl,
+    recipientFundingSourceUrl,
+    req.body.amount,
+  );
+
+  console.log("transferUrl=", transferUrl);
+
+  // save transfer url to database
 }
 
 export {
